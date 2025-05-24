@@ -1,20 +1,57 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 
 export const EmailList = ({ emailCategory }) => {
   const [emails, setEmails] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  const fetchEmails = async () => {
+    try {
+      const res = await fetch(`/emails/c/${emailCategory}`, {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to fetch emails");
+      const data = await res.json();
+      setEmails(data);
+    } catch (e) {
+      console.error(e);
+      setEmails([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const deleteEmail = async (id) => {
-    // TODO: delete email by id, redirect to the inbox page
+    try {
+      const res = await fetch(`/emails/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to delete email");
+      await fetchEmails();
+      navigate("/c/inbox");
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   useEffect(() => {
-    // TODO: get emails by <emailCategory>, fill emails state & change loading to false
+    setLoading(true);
+    fetchEmails();
   }, [emailCategory]);
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
 
   return (
     <div className="my-4 divide-y">
@@ -33,21 +70,23 @@ export const EmailList = ({ emailCategory }) => {
         emails.map((email) => (
           <div className="py-3 gap-4" key={email._id}>
             <div className="flex gap-4 items-center">
-              {/* TODO: make this link navigate to the specific email page */}
-              <Link className="flex justify-between grow gap-4">
+              <Link
+                to={`/c/${emailCategory}/${email._id}`}
+                className="flex justify-between grow gap-4"
+              >
                 <div className="font-medium hidden md:block">
-                  {/* TODO: show email sender */}
+                  {email.sender?.email || "Unknown"}
                 </div>
-                <div className="">{email.subject}</div>
+                <div className="truncate">{email.subject}</div>
                 <div className="hidden md:block">
-                  {/* TODO: show formatted sent date */}
+                  {formatDate(email.createdAt)}
                 </div>
               </Link>
               <div>
-                {/* TODO: call deleteEmail function on button click */}
                 <Button
                   className="p-2 flex items-center h-auto"
                   variant="outlineDestructive"
+                  onClick={() => deleteEmail(email._id)}
                 >
                   <Trash2 size={14} />
                 </Button>

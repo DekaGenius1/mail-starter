@@ -37,7 +37,9 @@ app.use(
   })
 )
 
-// TODO: Add /users and /emails routers (emailRoutes.js, userRoutes.js)
+app.use("/users", userRouter)
+app.use("/emails", emailRouter)
+
 
 app.use(handleError)
 

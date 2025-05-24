@@ -1,4 +1,5 @@
 import { createContext, useEffect, useState } from "react"
+import axios from "axios"
 
 export const AuthContext = createContext({
   user: null,
@@ -11,8 +12,20 @@ export const AuthContextProvider = ({ children }) => {
   const [user, setUser] = useState(null)
 
   useEffect(() => {
-    // TODO: check if user is logged in. Once you know the status, 
-    // change initialLoading to false and save user in the state
+    const checkStatus = async () => {
+      try {
+        const response = await axios.get("/users/status", {
+          withCredentials: true,
+        });
+        setUser(response.data.user);
+      } catch (error) {
+        setUser(null);
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+
+    checkStatus();
   }, [])
 
   return (

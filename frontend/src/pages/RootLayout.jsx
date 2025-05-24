@@ -1,4 +1,4 @@
-import { Outlet, Link } from "react-router"
+import { Outlet, Link, useNavigate } from "react-router-dom"
 import { useContext } from "react"
 import { AuthContext } from "@/components/AuthContext"
 import { ActiveLinkButton, Button } from "@/components/ui/button"
@@ -10,12 +10,20 @@ import sentIcon from "@/assets/sent.svg"
 import logoutIcon from "@/assets/log-out.svg"
 import loginIcon from "@/assets/login.svg"
 import registerIcon from "@/assets/register.svg"
+import axios from "axios"
 
 export const RootLayout = () => {
   const { user, initialLoading, setUser } = useContext(AuthContext)
+  const navigate = useNavigate()
 
   const logoutUser = async () => {
-    // TODO: clear user state and redirect to the login page
+    try {
+      await axios.post("/auth/logout", {}, { withCredentials: true })
+      setUser(null)
+      navigate("/login")
+    } catch (err) {
+      console.error("Logout failed", err)
+    }
   }
 
   return (
@@ -60,7 +68,7 @@ export const RootLayout = () => {
             </ul>
             <div className="flex items-center gap-4">
               <h1 className="text-lg font-bold hidden md:block">
-                {/* TODO: show user email */}
+                {user.email}
               </h1>
               <Button variant="outline" onClick={logoutUser}>
                 <span className="hidden md:inline-block">Log out</span>

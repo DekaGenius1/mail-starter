@@ -37,5 +37,17 @@ export const login = asyncHandler(async (req, res) => {
 })
 
 export const logout = asyncHandler(async (req, res) => {
-  // TODO: clear cookie, destroy session
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ message: "Logout failed" })
+    }
+
+    res.clearCookie("connect.sid", {
+      path: "/",
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+    })
+
+    res.status(200).json({ message: "Logged out successfully" })
+  })
 })
